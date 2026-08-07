@@ -1,58 +1,70 @@
-import { TranslatedInsight } from "@/lib/emotionAnalysis";
-import { Check, Heart, MessageCircle } from "lucide-react";
+/**
+ * Insight Card Component
+ * Displays AI-generated insights and suggestions
+ */
+
+import React from 'react';
+import { AlertCircle, Lightbulb, MessageCircle } from 'lucide-react';
+import type { InsightResponse } from '../services/aiInsights';
 
 interface InsightCardProps {
-  insight: TranslatedInsight;
-  message?: string;
+  insight: InsightResponse;
+  onCopy?: (text: string) => void;
 }
 
-export function InsightCard({ insight, message }: InsightCardProps) {
+export function InsightCard({ insight, onCopy }: InsightCardProps) {
+  const handleCopy = (text: string) => {
+    navigator.clipboard.writeText(text);
+    onCopy?.(text);
+  };
+
   return (
-    <div className="premium-card p-8 space-y-7 animate-slide-up relative overflow-hidden">
-      {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
-      
-      <div className="relative flex items-start gap-5">
-        <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center flex-shrink-0">
-          <span className="text-5xl">{insight.emoji}</span>
-        </div>
-        <div className="flex-1 pt-1">
-          <h3 className="font-display text-2xl font-bold text-foreground mb-2">
-            {insight.title}
-          </h3>
-          <p className="text-muted-foreground text-lg leading-relaxed">
-            {insight.explanation}
-          </p>
-        </div>
+    <div className="border rounded-lg p-4 bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
+      {/* Header */}
+      <div className="mb-4">
+        <h3 className="font-semibold text-gray-800 flex items-center gap-2">
+          <Lightbulb className="w-5 h-5 text-yellow-500" />
+          AI Insight
+        </h3>
       </div>
 
-      {message && (
-        <div className="relative bg-gradient-to-r from-muted/60 to-muted/30 rounded-2xl p-5 border border-border/30">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-            <MessageCircle className="w-4 h-4" />
-            <span>Optional message shared:</span>
+      {/* Crisis Alert */}
+      {insight.should_escalate && (
+        <div className="mb-4 p-3 bg-red-100 border border-red-300 rounded-md">
+          <div className="flex items-start gap-2">
+            <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
+            <div>
+              <p className="font-semibold text-red-900">{insight.for_receiver}</p>
+              <p className="text-sm text-red-700 mt-1">{insight.context_note}</p>
+            </div>
           </div>
-          <p className="text-foreground text-lg italic">"{message}"</p>
         </div>
       )}
 
-      <div className="relative space-y-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
-            <Heart className="w-5 h-5 text-primary" />
-          </div>
-          <h4 className="font-display font-bold text-foreground text-lg">How you can help:</h4>
-        </div>
-        <ul className="space-y-3 pl-1">
-          {insight.tips.map((tip, index) => (
-            <li key={index} className="flex items-start gap-4 text-muted-foreground group">
-              <span className="w-6 h-6 rounded-lg bg-secondary/50 flex items-center justify-center flex-shrink-0 mt-0.5 group-hover:bg-secondary transition-colors">
-                <Check className="w-4 h-4 text-secondary-foreground" />
-              </span>
-              <span className="text-lg leading-relaxed">{tip}</span>
-            </li>
-          ))}
-        </ul>
+      {/* Context Note */}
+      <div className="mb-3">
+        <p className="text-sm text-gray-700">{insight.context_note}</p>
+      </div>
+
+      {/* Suggested Response */}
+      <div className="mb-3 p-3 bg-white rounded border border-gray-200">
+        <p className="text-xs font-semibold text-gray-600 mb-2 flex items-center gap-2">
+          <MessageCircle className="w-4 h-4" />
+          Try saying:
+        </p>
+        <p className="text-gray-800 italic mb-2">"​{insight.suggested_response}"</p>
+        <button
+          onClick={() => handleCopy(insight.suggested_response)}
+          className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+        >
+          📋 Copy
+        </button>
+      </div>
+
+      {/* Empathy Tip */}
+      <div className="p-3 bg-green-50 rounded border border-green-200">
+        <p className="text-xs font-semibold text-green-900 mb-1">💡 Tip:</p>
+        <p className="text-sm text-green-800">{insight.empathy_tip}</p>
       </div>
     </div>
   );
